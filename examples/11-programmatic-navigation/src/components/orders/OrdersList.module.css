@@ -1,0 +1,29 @@
+.list {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.list a {
+  text-decoration: none;
+  display: block;
+  padding: 1rem;
+  background-color: #ffffff;
+  border-radius: 4px;
+  color: #51495e;
+  border: 1px solid transparent;
+}
+
+.list a:hover {
+  background-color: #dfeafb;
+  border-color: #007bff;
+}
+
+.list h2 {
+  color: #434146;
+  font-size: 1rem;
+  margin: 0;
+}

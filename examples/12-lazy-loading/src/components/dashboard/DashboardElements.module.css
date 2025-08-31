@@ -1,0 +1,9 @@
+.elements {
+  display: flex;
+  gap: 3rem;
+  align-items: flex-start;
+}
+
+.elements h2 {
+  color: #24476d;
+}
