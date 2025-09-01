@@ -13,8 +13,10 @@ const router = createBrowserRouter([
       { index: true, element: <Dashboard /> },
       { path: '/orders', element: <Orders /> },
       { path: '/orders/:id', element: <OrderDetail /> },
+      
     ],
   },
+  // { path: '*', element: <NotFound /> }
 ]);
 
 function App() {

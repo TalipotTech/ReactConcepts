@@ -9,7 +9,7 @@ function OrdersList() {
     <ul className={classes.list}>
       {orders.map((order) => (
         <li key={order.id}>
-          <Link to={`/orders/${order.id}`}>
+          <Link to={`/orders/${order.id}`} >
             <OrderItem order={order} />
           </Link>
         </li>

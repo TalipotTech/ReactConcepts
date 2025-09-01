@@ -10,7 +10,12 @@ function Root() {
               <NavLink to="/">My Dashboard</NavLink>
             </li>
             <li>
-              <NavLink to="/orders">Past Orders</NavLink>
+              <NavLink to="/orders" style={({ isActive }) => isActive ? { color: 'red' } : undefined}
+  end
+>Past Orders</NavLink>
+            </li>
+            <li>
+              <NavLink to="/orders/details">Order Details</NavLink>
             </li>
           </ul>
         </nav>

@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Root from './routes/Root.jsx';
 import Dashboard from './routes/Dashboard.jsx';
 import Orders from './routes/Orders.jsx';
+import OrderDetails from './routes/OrderDetails.jsx';
 
 const router = createBrowserRouter([
   {
@@ -11,6 +12,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Dashboard /> },
       { path: '/orders', element: <Orders /> },
+      { path: '/orders/details', element: <OrderDetails /> },
     ],
   },
 ]);
