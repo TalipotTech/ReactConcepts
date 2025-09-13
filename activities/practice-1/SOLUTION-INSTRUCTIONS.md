@@ -1,97 +1,142 @@
-1. Create a new React project via `npm create vite@latest <project>` as explained in _Chapter 1, React: What & Why?_. Then, install the React Router library by running `npm install react-router-dom` inside the project folder.
+1. Create a new React project via `npm create vite@latest <project>` as explained in _Chapter 1, React—What and Why?_. Then, install the React Router library by running `npm install react-router-dom` inside the project folder.
 
-2. For the three required pages, create three components: a `Welcome` component, a `Products` component, and a `ProductDetail` component.
+2. For the three required pages, create three components: a `Todos` component, a `NewTodo` component, and a `SelectedTodo` component. Store these components in files inside the `src/routes` folder since these components will only be used for routing.
 
-   Store these components in files inside the `src/routes` folder since these components will only be used for routing.
-
-   For the `Welcome` component, enter the following code:
+3. For the `Todos` component, enter the following code:
 
    ```jsx
-   // src/routes/Welcome.jsx
-   function Welcome() {
-     return (
+   // src/routes/Todos.jsx
+
+   function Todos() {
+     const todos = [];
+
+     let content = (
        <main>
-         <h1>Welcome to our shop!</h1>
-         <p>Please explore our products or share this site with others.</p>
+         <h1>No todos found</h1>
+         <p>Start adding some!</p>
+         <p>
+           <Link className="btn-cta" to="/new">
+             Add Todo
+           </Link>
+         </p>
        </main>
+     );
+
+     if (todos && todos.length > 0) {
+       content = (
+         <main>
+           <section>
+             <Link className="btn-cta" to="/new">
+               Add Todo
+             </Link>
+           </section>
+           <ul id="todos"></ul>
+         </main>
+       );
+     }
+
+     return (
+       <>
+         {content}
+         <Outlet />
+       </>
      );
    }
 
-   export default Welcome;
+   export default Todos;
    ```
 
-   To create the `Products` component, write the following code:
+   The code for the `NewTodo` component should look like this:
 
    ```jsx
-   // src/routes/Products.jsx
+   // src/routes/NewTodo.jsx
 
-   import products from '../data/products.js';
+   import Modal from '../components/Modal.jsx';
 
-   function Products() {
+   function NewTodo() {
      return (
-       <main>
-         <h1>Our Products</h1>
-         <ul id="products-list">
-           {products.map((product) => (
-             <li key={product.id}>
-               {product.title} (${product.price})
-             </li>
-           ))}
-         </ul>
-       </main>
+       <Modal>
+         <Form method="post">
+           <p>
+             <label htmlFor="text">Your todo</label>
+             <input type="text" id="text" name="text" />
+           </p>
+           <p className="form-actions">
+             <button>Save Todo</button>
+           </p>
+         </Form>
+       </Modal>
      );
    }
 
-   export default Products;
+   export default NewTodo;
    ```
 
-   The code for the `ProductDetail` component will look as follows:
+   The code for the `SelectedTodo` component will look as follows:
 
    ```jsx
-   // src/routes/ProductDetail.jsx
+   // src/routes/SelectedTodo.jsx
+   import Modal from '../components/Modal.jsx';
 
-   function ProductDetail() {
+   function SelectedTodo() {
      return (
-       <main>
-         <h1>PRODUCT TITLE</h1>
-         <p id="product-price">$PRODUCT PRICE</p>
-         <p>PRODUCT DESCRIPTION</p>
-       </main>
+       <Modal>
+         <Form method="post">
+           <p>
+             <label htmlFor="text">Your todo</label>
+             <input type="text" id="text" name="text" />
+           </p>
+           <p className="form-actions">
+             <button>Update Todo</button>
+           </p>
+         </Form>
+         <Form method="post">
+           <input type="hidden" name="_method" value="DELETE" />
+           <p className="form-actions">
+             <button className="btn-alt">Delete Todo</button>
+           </p>
+         </Form>
+       </Modal>
      );
    }
 
-   export default ProductDetail;
+   export default SelectedTodo;
    ```
 
-3. At the moment, no routing logic has been added yet. Therefore, dummy content such as `"PRODUCT TITLE"` is output in `ProductDetail`. This will change later.
+4. At the moment, the route definitions are missing, and no data loading or submission logic has been added.
 
-4. With the components added, it's time to add route definitions. For this, you must first enable React Router by importing and using the `createBrowserRouter()` function and the `RouterProvider` component (in the `App` component):
+   Please note, however, that the components already use `<Link>` and `<Form>`.
+
+5. With the components added, it's time to add route definitions. For this, you must first enable React Router by importing and using the `RouterProvider` component (in the `App` component):
 
    ```jsx
-   import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-
-   const router = createBrowserRouter([]);
+   import { RouterProvider } from 'react-router-dom';
 
    function App() {
-     return <RouterProvider router={router} />;
+     return <RouterProvider />;
    }
 
    export default App;
    ```
 
-5. As an argument to the `createBrowserRouter()` function, provide an array of route definitions for the three routes. For each route definition, you must add a `path` and an `element` property—the latter of which should render the respective component that belongs to the route:
+   `RouterProvider` requires a value for its `router` prop. That value must be an array of route definition objects:
 
    ```jsx
    import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-   import ProductDetail from './routes/ProductDetail.jsx';
-   import Products from './routes/Products.jsx';
-   import Welcome from './routes/Welcome.jsx';
+   import Todos from './routes/Todos.jsx';
+   import NewTodo from './routes/NewTodo.jsx';
+   import SelectedTodo from './routes/SelectedTodo.jsx';
 
    const router = createBrowserRouter([
-     { path: '/', element: <Welcome /> },
-     { path: '/products', element: <Products /> },
-     { path: '/products/:id', element: <ProductDetail /> },
+     {
+       path: '/',
+       element: <Todos />,
+       children: [
+         { path: 'new', element: <NewTodo /> },
+         { path: ':id', element: <SelectedTodo /> },
+       ],
+     },
    ]);
 
    function App() {
@@ -101,224 +146,350 @@
    export default App;
    ```
 
-   The paths are up to you, but with the provided page descriptions, `/`, `/products`, and `/products/:id` are sensible choices. Though, instead of `:id`, you could, of course, use `:productId` or any other identifier.
+6. Please note that the `/new` and `/:id` routes are child routes of the `/` route. The `/` route is thus a layout route, wrapping these child routes. That's why this layout route (`Todos` in `Todos.jsx`) renders an `<Outlet />` element.
+7. To load and display to-dos, add a `loader()` function to the `Todos` route. As a first step, export such a function in the `routes/Todos.jsx` file:
 
-6. The website should also have a main navigation bar. Therefore, as a next step, create a `MainNavigation` component and store it in an `src/components/MainNavigation.jsx` file.
+   ```js
+   // other imports ...
+   import { getTodos } from '../data/todos.js';
 
-   It's not a component that will be assigned directly to a route, and therefore it does not go in the `src/routes` folder. Inside the `MainNavigation` component, you should render a `<header>` element that contains a `<nav>` element, which then outputs a list (`<ul>`) of links. The actual links, however, will be added in a later step:
-
-   ```jsx
-   function MainNavigation() {
-     return (
-       <header id="main-nav">
-         <nav>
-           <ul>
-             <li>Home</li>
-             <li>Our Products</li>
-           </ul>
-         </nav>
-       </header>
-     );
-   }
-
-   export default MainNavigation;
-   ```
-
-7. Next, create a root layout route that wraps the existing three routes. This layout route can then be used to share the `<MainNavigation>` component across all three routes.
-
-   The `routes/Root.jsx` file looks like this:
-
-   ```jsx
-   import { Outlet } from 'react-router-dom';
-
-   import MainNavigation from '../components/MainNavigation.jsx';
-
-   export default function Root() {
-     return (
-       <>
-         <MainNavigation />
-         <Outlet />
-       </>
-     );
+   export function loader() {
+     // getTodos() is a utility function that uses localStorage under the hood
+     return getTodos();
    }
    ```
 
-   It’s then used in the updated route definitions in `App.jsx`:
+8. Thereafter, assign it as a value for the `loader` prop on the `/` route definition:
 
-   ```jsx
-   import Root from './routes/Root.jsx';
-   // other imports
+   ```js
+   import Todos, { loader as todosLoader } from './routes/Todos.jsx';
+   // other imports ...
 
    const router = createBrowserRouter([
      {
        path: '/',
-       element: <Root />,
+       element: <Todos />,
+       loader: todosLoader,
        children: [
-         { index: true, element: <Welcome /> },
-         { path: '/products', element: <Products /> },
-         { path: '/products/:id', element: <ProductDetail /> },
+         // child routes ...
        ],
      },
    ]);
    ```
 
-8. It's time to add some links. Place one link in the `Welcome` component. There, the text `"our products"` (in `'Please explore "Our Products" …'`) should be turned into a link.
+9. `getTodos()` from the previous step is a utility function that reaches out to `localStorage` to retrieve and parse stored to-dos. Implement this function using the following code:
 
-   Since it's an internal link, use the `<Link>` element:
-
-   ```jsx
-   import { Link } from 'react-router-dom';
-
-   function Welcome() {
-     return (
-       <main>
-         <h1>Welcome to our shop!</h1>
-         <p>
-           Please explore
-           <Link to="/products">our products</Link>
-           or share this site with others.
-         </p>
-       </main>
-     );
+   ```js
+   function getTodosFromStorage() {
+     return JSON.parse(localStorage.getItem('todos'));
    }
 
-   export default Welcome;
-   ```
-
-9. In the `MainNavigation` component, use `NavLink` so that the navigation items reflect whether or not they are linked to the currently active route:
-
-   ```jsx
-   import { NavLink } from 'react-router-dom';
-
-   function MainNavigation() {
-     return (
-       <header id="main-nav">
-         <nav>
-           <ul>
-             <li>
-               <NavLink to="/">Home</NavLink>
-             </li>
-             <li>
-               <NavLink to="/products">Our Products</NavLink>
-             </li>
-           </ul>
-         </nav>
-       </header>
-     );
+   export function getTodos() {
+     return getTodosFromStorage();
    }
-
-   export default MainNavigation;
    ```
 
-10. More links must be added to the `Products` component. In the list of products that's rendered there, ensure every list item links to the `ProductDetail` component (i.e., to the `/products/:id` route). The link, therefore, must be generated dynamically with the help of the product id:
+10. To use the loaded to-dos data, use the `useLoaderData()` Hook inside the `Todos` component. The loaded to-dos are then output via an unordered list (`<ul>`):
 
     ```jsx
-    import { Link } from 'react-router-dom';
+    import { Link, Outlet, useLoaderData } from 'react-router-dom';
 
-    import products from '../data/products.js';
+    import { getTodos } from '../data/todos.js';
 
-    function Products() {
-      return (
+    function Todos() {
+      const todos = useLoaderData();
+
+      let content = (
         <main>
-          <h1>Our Products</h1>
-          <ul id="products-list">
-            {products.map((product) => (
-              <li key={product.id}>
-                <Link to={`/products/${product.id}`}>
-                  {product.title} (${product.price})
-                </Link>
-              </li>
-            ))}
-          </ul>
+          <h1>No todos found</h1>
+          <p>Start adding some!</p>
+          <p>
+            <Link className="btn-cta" to="/new">
+              Add Todo
+            </Link>
+          </p>
         </main>
       );
-    }
 
-    export default Products;
-    ```
-
-11. To finish this project, dynamic product detail data must be output in the `ProductDetail` component. For this, use the `useParams()` Hook to get access to the product id that's encoded in the URL path.
-
-    With the help of that ID, you can find the product that's needed and output its data:
-
-    ```jsx
-    import { useParams } from 'react-router-dom';
-
-    import products from '../data/products.js';
-
-    function ProductDetail() {
-      const params = useParams();
-      const prodId = params.id;
-      const product = products.find((product) => product.id === prodId);
+      if (todos && todos.length > 0) {
+        content = (
+          <main>
+            <section>
+              <Link className="btn-cta" to="/new">
+                Add Todo
+              </Link>
+            </section>
+            <ul id="todos">
+              {todos.map((todo) => (
+                <li key={todo.id}>
+                  <Link to={todo.id}>{todo.text}</Link>
+                </li>
+              ))}
+            </ul>
+          </main>
+        );
+      }
 
       return (
-        <main>
-          <h1>{product.title}</h1>
-          <p id="product-price">${product.price}</p>
-          <p>{product.description}</p>
-        </main>
+        <>
+          {content}
+          <Outlet />
+        </>
       );
     }
-
-    export default ProductDetail;
     ```
 
-12. Finally, implement lazy loading by using React Router’s built-in support via the `lazy` property. Add the `lazy` property to the `/products` and `/products/:id` routes since these routes are unlikely to be loaded initially. Set `lazy` to a function that imports the files dynamically.
+11. Another route that needs to-do data is the `/:id` route. There, a single to-do item must be loaded as the route is activated. You could reuse the to-dos data from the `/` route (via `useRouteLoaderData()`) but for practice purposes, use a separate `loader()` function for this activity.
+
+    This `loader()` function, which is added to and exported from `routes/SelectedTodo.jsx` has this shape:
+
+    ```js
+    import { getTodo } from '../data/todos.js';
+    // ... other imports
+
+    export async function loader({ params }) {
+      return getTodo(params.id);
+    }
+    ```
+
+12. `getTodo()` is yet another utility function. Implement it as follows:
+
+    ```js
+    export function getTodo(id) {
+      const todos = getTodosFromStorage();
+      const todo = todos.find((t) => t.id === id);
+
+      if (!todo) {
+        throw new Error('Could not find todo for id ' + id);
+      }
+
+      return todo;
+    }
+    ```
+
+13. Please note that this function throws an error if no to-do is found for the specified id. For that reason, error handling will be implemented in a later step.
+
+14. Inside the `SelectedTodo` component, access the selected to-do item data via `useLoaderData()`. Then, use that data to set a default value on the form input:
 
     ```jsx
-    import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+    function SelectedTodo() {
+      const todo = useLoaderData();
+      return (
+        <Modal>
+          <Form method="post">
+            <p>
+              <label htmlFor="text">Your todo</label>
+              <input
+                type="text"
+                id="text"
+                name="text"
+                defaultValue={todo.text}
+              />
+            </p>
+            <p className="form-actions">
+              <button>Update Todo</button>
+            </p>
+          </Form>
+          <Form method="post">
+            <input type="hidden" name="_method" value="DELETE" />
+            <p className="form-actions">
+              <button className="btn-alt">Delete Todo</button>
+            </p>
+          </Form>
+        </Modal>
+      );
+    }
+    ```
 
-    import Root from './routes/Root.jsx';
-    import Welcome from './routes/Welcome.jsx';
+15. To ensure users are able to submit new to-dos, export an `action()` function in the `NewTodo` component file, as shown here:
+
+    ```js
+    import { addTodo } from '../data/todos.js';
+    // ... other imports
+
+    export async function action({ request }) {
+      const formData = await request.formData();
+      const enteredText = formData.get('text');
+      addTodo(enteredText);
+      return redirect('/');
+    }
+    ```
+
+16. This function extracts the submitted form data, retrieves the entered text value, calls the `addTodo()` utility function, and then redirects the user back to the main page (`/`).
+
+    Since the `NewTodo` component uses `<Form>` instead of `<form>`, React Router will automatically prevent the browser default and call the `action()` function assigned to the route that contains the form (`/new` route, in this case).
+
+17. `addTodo()` (defined in `data/todos.js`) is implemented like this:
+
+    ```js
+    function saveTodosToStorage(todos) {
+      const serializedTodos = JSON.stringify(todos);
+      localStorage.setItem('todos', serializedTodos);
+    }
+
+    export function addTodo(text) {
+      let todos = getTodosFromStorage();
+      const newTodo = {
+        id: new Date().toISOString(),
+        text,
+      };
+      if (todos) {
+        todos.unshift(newTodo);
+      } else {
+        todos = [newTodo];
+      }
+      saveTodosToStorage(todos);
+    }
+    ```
+
+18. To allow React Router to execute the preceding `action()` function when the `<Form>` in `NewTodo` is submitted, register the action in the route definition:
+
+    ```jsx
+    import NewTodo, { action as newTodoAction } from './routes/NewTodo.jsx';
+    // ... other imports
 
     const router = createBrowserRouter([
       {
         path: '/',
-        element: <Root />,
+        element: <Todos />,
+        loader: todosLoader,
         children: [
-          { index: true, element: <Welcome /> },
           {
-            path: '/products',
-            lazy: () => import('./routes/Products.jsx'),
-          },
-          {
-            path: '/products/:id',
-            lazy: () => import('./routes/ProductDetail.jsx'),
+            path: 'new',
+            element: <NewTodo />,
+            action: newTodoAction,
           },
         ],
       },
     ]);
-
-    function App() {
-      return <RouterProvider router={router} />;
-    }
-
-    export default App;
     ```
 
-    Also make sure that the `Products.jsx` and `ProductDetail.jsx` files have a named export called `Component` (which points at the component function).
+19. To allow users to update or delete to-do items, add an `action()` function to the `SelectedTodo` component file. In that function, use the value of the hidden `_method` input field to determine which code to run.
+
+    This is required because inside the `SelectedTodo` component, two forms are created via `<Form>` (see step 3): one `<Form>` aims to update to-dos, and the other `<Form>` is used to delete to-dos.
+
+    The `action()` function is implemented like this:
+
+    ```js
+    import { deleteTodo, getTodo, updateTodo } from '../data/todos.js';
+
+    // ... other imports
+
+    export async function action({ request, params }) {
+      const todoId = params.id;
+      const formData = await request.formData();
+      const method = formData.get('_method');
+
+      if (method !== 'DELETE') {
+        const enteredText = formData.get('text');
+        updateTodo(todoId, enteredText);
+      }
+
+      if (method === 'DELETE') {
+        deleteTodo(todoId);
+      }
+      return redirect('/');
+    }
+    ```
+
+20. Once again, define `updateTodo()` and `deleteTodo()` in the `data/todos.js` file:
+
+    ```js
+    export function updateTodo(id, newText) {
+      const todos = getTodos();
+      const updatedTodo = todos.find((t) => t.id === id);
+      updatedTodo.text = newText;
+      saveTodosToStorage(todos);
+    }
+
+    export function deleteTodo(id) {
+      const todos = getTodos();
+      const updatedTodos = todos.filter((t) => t.id !== id);
+      saveTodosToStorage(updatedTodos);
+    }
+    ```
+
+21. Finally, to make React Router aware of this `action()` function and ensure that it gets executed as the respective forms are submitted, register the action created in step 16, as follows:
 
     ```jsx
-    import { Link } from 'react-router-dom';
+    import SelectedTodo, {
+      action as changeTodoAction,
+      loader as todoLoader,
+    } from './routes/SelectedTodo';
+    // ... other imports
 
-    import products from '../data/products.js';
+    const router = createBrowserRouter([
+      {
+        path: '/',
+        element: <Todos />,
+        loader: todosLoader,
+        children: [
+          {
+            path: 'new',
+            element: <NewTodo />,
+            action: newTodoAction,
+          },
+          {
+            path: ':id',
+            element: <SelectedTodo />,
+            action: changeTodoAction,
+            loader: todoLoader,
+          },
+        ],
+      },
+    ]);
+    ```
 
-    function Products() {
+22. To handle any errors that have occurred, add a new `Error` component that is displayed when things go wrong. This component is stored in `routes/Error.jsx`:
+
+    ```jsx
+    import { useRouteError } from 'react-router-dom';
+
+    import Modal from '../components/Modal.jsx';
+
+    function Error() {
+      const error = useRouteError();
+
       return (
-        <main>
-          <h1>Our Products</h1>
-          <ul id="products-list">
-            {products.map((product) => (
-              <li key={product.id}>
-                <Link to={`/products/${product.id}`}>
-                  {product.title} (${product.price})
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </main>
+        <Modal>
+          <h1>An error occurred!</h1>
+          <p>{error.message}</p>
+        </Modal>
       );
     }
 
-    export const Component = Products;
+    export default Error;
     ```
+
+    This component uses React Router's `useRouteError()` Hook to access the error that was thrown. The error is then used to output the error message.
+
+23. To use this `Error` component as a fallback, add it as a value for the `errorElement` property in your route definitions:
+
+```jsx
+import Error from './routes/Error.jsx';
+// ... other imports
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Todos />,
+    errorElement: <Error />,
+    loader: todosLoader,
+    children: [
+      {
+        path: 'new',
+        element: <NewTodo />,
+        action: newTodoAction,
+      },
+      {
+        path: ':id',
+        element: <SelectedTodo />,
+        action: changeTodoAction,
+        loader: todoLoader,
+      },
+    ],
+  },
+]);
+```
+
+Here, `Error` is set as an `errorElement` on the main route and is used by React Router for all errors occurring anywhere in the entire app.

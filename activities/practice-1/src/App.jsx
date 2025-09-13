@@ -1,18 +1,26 @@
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 
-import Root from './routes/Root.jsx';
-import Welcome from './routes/Welcome.jsx';
+import Todos, { loader as todosLoader } from './routes/Todos.jsx';
+import NewTodo, { action as newTodoAction } from './routes/NewTodo.jsx';
+import SelectedTodo, {
+  action as changeTodoAction,
+  loader as todoLoader,
+} from './routes/SelectedTodo.jsx';
+import Error from './routes/Error.jsx';
 
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Root />,
+    element: <Todos />,
+    errorElement: <Error />,
+    loader: todosLoader,
     children: [
-      { index: true, element: <Welcome /> },
-      { path: '/products', lazy: () => import('./routes/Products.jsx') },
+      { path: 'new', element: <NewTodo />, action: newTodoAction },
       {
-        path: '/products/:id',
-        lazy: () => import('./routes/ProductDetail.jsx'),
+        path: ':id',
+        element: <SelectedTodo />,
+        action: changeTodoAction,
+        loader: todoLoader,
       },
     ],
   },
