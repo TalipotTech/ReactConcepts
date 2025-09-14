@@ -4,11 +4,15 @@ function PostsList() {
   const loadedPosts = useLoaderData();
 
   return (
-    <ul className="posts">
-      {loadedPosts.map((post) => (
-        <li key={post.id}>{post.title}</li>
-      ))}
-    </ul>
+    <>
+      {console.log('4. PostsList.jsx is running')}
+      <ul className="posts">
+        {loadedPosts.map((post) => (
+          <li key={post.id}>{post.title}</li>
+        ))}
+      </ul>
+      {console.log('5. PostsList.jsx is done')}
+    </>
   );
 }
 

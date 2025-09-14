@@ -3,6 +3,7 @@ import PostsList from '../components/PostsList.jsx';
 function Posts() {
   return (
     <main>
+      
       <h1>Your Posts</h1>
       <PostsList />
     </main>
@@ -12,7 +13,9 @@ function Posts() {
 export default Posts;
 
 export async function loader() {
+  console.log('2. Posts.jsx is running');
   const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  console.log('3. loading function is done');
   if (!response.ok) {
     throw new Error('Could not fetch posts');
   }

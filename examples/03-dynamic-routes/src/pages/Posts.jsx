@@ -11,7 +11,10 @@ function Posts() {
 
 export default Posts;
 
-export async function loader() {
+export async function loader({request}) {
+  console.log('request.url : ' + request.url);
+  const sortDirection = new URL(request.url).searchParams.get('sort');
+  console.log('Sort Direction : ' + sortDirection);
   const response = await fetch('https://jsonplaceholder.typicode.com/posts');
   if (!response.ok) {
     throw new Error('Could not fetch posts');

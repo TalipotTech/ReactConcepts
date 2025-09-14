@@ -12,7 +12,10 @@ function PostDetails() {
 
 export default PostDetails;
 
-export async function loader({ params }) {
+export async function loader({ params,request }) {
+  console.log('Loading details for post id ' + params.id);
+  console.log('Request : ' + request);
+  
   const response = await fetch(
     'https://jsonplaceholder.typicode.com/posts/' + params.id
   );
