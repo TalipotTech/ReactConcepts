@@ -1,0 +1,81 @@
+name: Copy remaining branches from source repo
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_repo:
+        description: "Source GitHub repo (owner/name)"
+        required: true
+        default: "mschwarzmueller/book-react-key-concepts-e2"
+      include_main:
+        description: "Also copy main branch?"
+        required: false
+        default: "false"
+      dry_run:
+        description: "Only list branches without pushing"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write
+
+jobs:
+  copy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout target repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      - name: Add source remote and fetch
+        env:
+          SOURCE_REPO: ${{ github.event.inputs.source_repo }}
+        run: |
+          set -euo pipefail
+          git remote add source "https://github.com/${SOURCE_REPO}.git" || git remote set-url source "https://github.com/${SOURCE_REPO}.git"
+          git fetch --prune origin
+          git fetch --prune source
+      - name: Compute missing branches
+        id: compute
+        env:
+          INCLUDE_MAIN: ${{ github.event.inputs.include_main }}
+        run: |
+          set -euo pipefail
+          mapfile -t SOURCE_BRANCHES < <(git ls-remote --heads source | awk '{print $2}' | sed 's#refs/heads/##' | sort)
+          mapfile -t TARGET_BRANCHES < <(git ls-remote --heads origin | awk '{print $2}' | sed 's#refs/heads/##' | sort)
+          declare -A TARGET_MAP=()
+          for b in "${TARGET_BRANCHES[@]}"; do TARGET_MAP["$b"]=1; done
+          SKIP=("main")
+          if [[ "${INCLUDE_MAIN,,}" == "true" ]]; then SKIP=(); fi
+          MISSING=()
+          for b in "${SOURCE_BRANCHES[@]}"; do
+            skip=false
+            for s in "${SKIP[@]}"; do [[ "$b" == "$s" ]] && skip=true && break; done
+            $skip && continue
+            if [[ -z "${TARGET_MAP[$b]:-}" ]]; then
+              MISSING+=("$b")
+            fi
+          done
+          printf '%s\n' "${MISSING[@]}" > missing.txt
+          echo "missing_count=${#MISSING[@]}" >> "$GITHUB_OUTPUT"
+          echo "missing_list=$(printf '%s ' "${MISSING[@]}")" >> "$GITHUB_OUTPUT"
+          echo "Branches to copy (${#MISSING[@]}):"
+          printf ' - %s\n' "${MISSING[@]:-<none>}"
+      - name: Push missing branches
+        if: ${{ github.event.inputs.dry_run != 'true' && steps.compute.outputs.missing_count != '0' }}
+        run: |
+          set -euo pipefail
+          while read -r b; do
+            [[ -z "$b" ]] && continue
+            echo "Copying $b"
+            git fetch source "$b:refs/heads/$b"
+            git push origin "refs/heads/$b:refs/heads/$b"
+            git branch -D "$b" || true
+          done < missing.txt
+      - name: Summary
+        run: |
+          echo "Copied ${{ steps.compute.outputs.missing_count }} branches"
